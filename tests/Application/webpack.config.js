@@ -7,35 +7,34 @@ const uiBundleResources = path.resolve(syliusBundles, 'UiBundle/Resources/privat
 
 // Shop config
 Encore
-  .setOutputPath('public/build/shop/')
-  .setPublicPath('/build/shop')
-  .addEntry('shop-entry', '../../vendor/sylius/sylius/src/Sylius/Bundle/ShopBundle/Resources/private/entry.js')
-  .disableSingleRuntimeChunk()
-  .cleanupOutputBeforeBuild()
-  .enableSourceMaps(!Encore.isProduction())
-  .enableVersioning(Encore.isProduction())
-  .enableSassLoader();
+    .setOutputPath('public/build/shop/')
+    .setPublicPath('/build/shop')
+    .addEntry('shop-entry', '../../vendor/sylius/sylius/src/Sylius/Bundle/ShopBundle/Resources/private/entry.js')
+    .disableSingleRuntimeChunk()
+    .cleanupOutputBeforeBuild()
+    .enableSourceMaps(!Encore.isProduction())
+    .enableVersioning(Encore.isProduction())
+    .enableSassLoader();
 
 const shopConfig = Encore.getWebpackConfig();
 
 shopConfig.resolve.alias['sylius/ui'] = uiBundleScripts;
 shopConfig.resolve.alias['sylius/ui-resources'] = uiBundleResources;
 shopConfig.resolve.alias['sylius/bundle'] = syliusBundles;
-shopConfig.resolve.alias['chart.js/dist/Chart.min'] = path.resolve(__dirname, 'node_modules/chart.js/dist/chart.min.js');
 shopConfig.name = 'shop';
 
 Encore.reset();
 
 // Admin config
 Encore
-  .setOutputPath('public/build/admin/')
-  .setPublicPath('/build/admin')
-  .addEntry('admin-entry', '../../vendor/sylius/sylius/src/Sylius/Bundle/AdminBundle/Resources/private/entry.js')
-  .disableSingleRuntimeChunk()
-  .cleanupOutputBeforeBuild()
-  .enableSourceMaps(!Encore.isProduction())
-  .enableVersioning(Encore.isProduction())
-  .enableSassLoader();
+    .setOutputPath('public/build/admin/')
+    .setPublicPath('/build/admin')
+    .addEntry('admin-entry', '../../vendor/sylius/sylius/src/Sylius/Bundle/AdminBundle/Resources/private/entry.js')
+    .disableSingleRuntimeChunk()
+    .cleanupOutputBeforeBuild()
+    .enableSourceMaps(!Encore.isProduction())
+    .enableVersioning(Encore.isProduction())
+    .enableSassLoader();
 
 const adminConfig = Encore.getWebpackConfig();
 
