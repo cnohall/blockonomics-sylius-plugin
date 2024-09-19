@@ -1,10 +1,12 @@
 {
+    "name": "sylius/plugin-skeleton",
     "type": "sylius-plugin",
+    "description": "Acme example plugin for Sylius.",
     "keywords": [
         "sylius",
         "sylius-plugin"
     ],
-    "license": "proprietary",
+    "license": "MIT",
     "require": {
         "php": "^8.1",
         "sylius/sylius": "~1.13.0",
@@ -54,6 +56,9 @@
         }
     },
     "extra": {
+        "branch-alias": {
+            "dev-master": "1.13-dev"
+        },
         "symfony": {
             "require": "^5.4 || ^6.4"
         }
