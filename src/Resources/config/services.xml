@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <defaults public="true" />
+
+        <service id="blockonomics_sylius_blockonomics_plugin.api_client.blockonomics" class="BitBag\SyliusBlockonomicsPlugin\ApiClient\BlockonomicsApiClient" public="true"/>
+
+        <service id="blockonomics_sylius_blockonomics_plugin.form.type.blockonomics_gateway_configuration" class="BitBag\SyliusBlockonomicsPlugin\Form\Type\BlockonomicsGatewayConfigurationType">
+            <tag name="sylius.gateway_configuration_type" type="blockonomics" label="blockonomics_sylius_blockonomics_plugin.ui.blockonomics_gateway_label" />
+            <tag name="form.type" />
+        </service>
+
+        <service id="blockonomics_sylius_blockonomics_plugin.gateway_factory.blockonomics" class="Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder">
+            <argument type="string">BitBag\SyliusBlockonomicsPlugin\BlockonomicsGatewayFactory</argument>
+            <tag name="payum.gateway_factory_builder" factory="blockonomics" />
+        </service>
+
+        <service id="blockonomics_sylius_blockonomics_plugin.payment_processing.refund" class="BitBag\SyliusBlockonomicsPlugin\PaymentProcessing\RefundPaymentProcessor">
+            <argument type="service" id="blockonomics_sylius_blockonomics_plugin.api_client.blockonomics" />
+        </service>
+    </services>
+</container>

@@ -1,7 +1,7 @@
 {
-    "name": "sylius/plugin-skeleton",
+    "name": "blocknomics/blockonomics-plugin",
     "type": "sylius-plugin",
-    "description": "Acme example plugin for Sylius.",
+    "description": "Blockonomics payment plugin for Sylius applications.",
     "keywords": [
         "sylius",
         "sylius-plugin"
@@ -65,8 +65,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Acme\\SyliusExamplePlugin\\": "src/",
-            "Tests\\Acme\\SyliusExamplePlugin\\": "tests/"
+            "Blockonomics\\SyliusBlockonomicsPlugin\\": "src/",
+            "Tests\\Blockonomics\\SyliusBlockonomicsPlugin\\": "tests/"
         }
     },
     "autoload-dev": {

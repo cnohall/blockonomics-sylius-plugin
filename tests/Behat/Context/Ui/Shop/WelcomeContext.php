@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Acme\SyliusExamplePlugin\Behat\Context\Ui\Shop;
+namespace Tests\Blockonomics\SyliusBlockonomicsPlugin\Behat\Context\Ui\Shop;
 
 use Behat\Behat\Context\Context;
-use Tests\Acme\SyliusExamplePlugin\Behat\Page\Shop\WelcomePageInterface;
+use Tests\Blockonomics\SyliusBlockonomicsPlugin\Behat\Page\Shop\WelcomePageInterface;
 use Webmozart\Assert\Assert;
 
 final class WelcomeContext implements Context
