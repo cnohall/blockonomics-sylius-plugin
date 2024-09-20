@@ -7,45 +7,62 @@ namespace Blockonomics\SyliusBlockonomicsPlugin\Form\Type;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 final class BlockonomicsGatewayConfigurationType extends AbstractType
 {
+    private $requestStack;
+
+    public function __construct(RequestStack $requestStack)
+    {
+        $this->requestStack = $requestStack;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $request = $this->requestStack->getCurrentRequest();
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $randomBytes = random_bytes(20);
+        $callbackSecret = sha1($randomBytes);
+
         $builder
-            ->add('merchantId', TextType::class, [
-                'label' => 'blockonomics_sylius_blockonomics_plugin.ui.merchant_id',
+            ->add('apiKey', TextType::class, [
+                'label' => 'blockonomics_sylius_blockonomics_plugin.ui.api_key',
+                'required' => true,
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'blockonomics_sylius_blockonomics_plugin.merchant_id.not_blank',
+                        'message' => 'blockonomics_sylius_blockonomics_plugin.api_key.not_blank',
                         'groups' => 'sylius',
                     ]),
                 ],
             ])
-            ->add('publicKey', TextType::class, [
-                'label' => 'blockonomics_sylius_blockonomics_plugin.ui.public_key',
+            ->add('callbackUrl', HiddenType::class, [
+                'required' => true,
+                'data' => $callbackSecret,
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'blockonomics_sylius_blockonomics_plugin.public_key.not_blank',
+                        'message' => 'blockonomics_sylius_blockonomics_plugin.api_key.not_blank',
                         'groups' => 'sylius',
                     ]),
                 ],
             ])
-            ->add('privateKey', TextType::class, [
-                'label' => 'blockonomics_sylius_blockonomics_plugin.ui.private_key',
+            ->add('callbackUrl', TextType::class, [
+                'label' => 'blockonomics_sylius_blockonomics_plugin.ui.callback_url',
+                'required' => true,
+                'disabled' => true,
+                // TODO: Change this to the correct URL
+                'data' => $baseUrl . "/unknown/url/?secret=" . $callbackSecret,
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'blockonomics_sylius_blockonomics_plugin.private_key.not_blank',
+                        'message' => 'blockonomics_sylius_blockonomics_plugin.callback_url.not_blank',
                         'groups' => 'sylius',
                     ]),
                 ],
-            ])
-            ->add('sandbox', CheckboxType::class, [
-                'label' => 'blockonomics_sylius_blockonomics_plugin.ui.sandbox',
             ])
             ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
                 $data = $event->getData();

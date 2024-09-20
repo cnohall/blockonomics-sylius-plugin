@@ -1,3 +1,5 @@
 blockonomics_sylius_blockonomics_plugin:
     ui:
         blockonomics_gateway_label: Blockonomics
+        api_key: API Key
+        callback_url: Callback Url

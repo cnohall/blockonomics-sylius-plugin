@@ -1,0 +1,5 @@
+blockonomics_sylius_blockonomics_plugin:
+    api_key:
+        not_blank: API ID cannot be blank.
+    callback_url:
+        not_blank: Callback Url cannot be blank.

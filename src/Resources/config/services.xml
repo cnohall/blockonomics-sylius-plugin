@@ -7,6 +7,7 @@
         <service id="blockonomics_sylius_blockonomics_plugin.api_client.blockonomics" class="Blockonomics\SyliusBlockonomicsPlugin\ApiClient\BlockonomicsApiClient" public="true"/>
 
         <service id="blockonomics_sylius_blockonomics_plugin.form.type.blockonomics_gateway_configuration" class="Blockonomics\SyliusBlockonomicsPlugin\Form\Type\BlockonomicsGatewayConfigurationType">
+            <argument type="service" id="request_stack"/>
             <tag name="sylius.gateway_configuration_type" type="blockonomics" label="blockonomics_sylius_blockonomics_plugin.ui.blockonomics_gateway_label" />
             <tag name="form.type" />
         </service>
