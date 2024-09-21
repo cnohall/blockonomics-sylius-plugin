@@ -26,7 +26,9 @@ Todo:
 
 ![image](https://github.com/user-attachments/assets/842f2766-a82d-4418-a107-5b067e40105f)
 
+### Blockonomics Payment Gateway successfully added
 
+![image](https://github.com/user-attachments/assets/4fdda6f9-0a58-48f4-aeb4-3da5aa927c70)
 
 ## All below to be updated when we have a product that works end to end
 
