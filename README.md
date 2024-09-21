@@ -30,6 +30,10 @@ Todo:
 
 ![image](https://github.com/user-attachments/assets/4fdda6f9-0a58-48f4-aeb4-3da5aa927c70)
 
+### Blockonomics showing to customer as payment method
+
+![image](https://github.com/user-attachments/assets/7b70f614-079d-4108-9409-e18277ffe18f)
+
 ## All below to be updated when we have a product that works end to end
 
 
