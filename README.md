@@ -1,3 +1,36 @@
+## Progress so far
+
+### Installation
+
+```bash
+composer install
+cd tests/application
+php bin/console sylius:install
+yarn install
+yarn build
+symfony start
+```
+
+### Adding Blockonomics payment method
+- Todo: translations
+
+![image](https://github.com/user-attachments/assets/21df33b9-59d4-4a16-908b-20b9554e6097)
+
+
+### Blockonomics gateway form
+Todo: 
+- Figure out what `Code` is
+- Translations
+- Update callback url to correct url
+- Action to submit form
+
+![image](https://github.com/user-attachments/assets/842f2766-a82d-4418-a107-5b067e40105f)
+
+
+
+## All below to be updated when we have a product that works end to end
+
+
 <p align="center">
     <a href="https://sylius.com" target="_blank">
         <img src="https://demo.sylius.com/assets/shop/img/logo.png" />
