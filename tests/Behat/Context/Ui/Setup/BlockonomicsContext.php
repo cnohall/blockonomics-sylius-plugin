@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Blockonomics\SyliusBlockonomicsPlugin\Behat\Context\Setup;
 
 use Behat\Behat\Context\Context;
-use Blockonomics\SyliusBlockonomicsPlugin\BlockonomicsGatewayFactory;
+use Blockonomics\SyliusBlockonomicsPlugin\Payum\BlockonomicsGatewayFactory;
 use Doctrine\ORM\EntityManagerInterface;
 use Sylius\Behat\Service\SharedStorageInterface;
 use Sylius\Bundle\CoreBundle\Fixture\Factory\ExampleFactoryInterface;

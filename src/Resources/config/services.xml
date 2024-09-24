@@ -13,7 +13,7 @@
         </service>
 
         <service id="blockonomics_sylius_blockonomics_plugin.gateway_factory.blockonomics" class="Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder">
-            <argument type="string">Blockonomics\SyliusBlockonomicsPlugin\BlockonomicsGatewayFactory</argument>
+            <argument type="string">Blockonomics\SyliusBlockonomicsPlugin\Payum\BlockonomicsGatewayFactory</argument>
             <tag name="payum.gateway_factory_builder" factory="blockonomics" />
         </service>
 
