@@ -1,0 +1,2 @@
+imports:
+    - { resource: "@BlockonomicsSyliusBlockonomicsPlugin/Resources/config/config.yml" }

@@ -31,62 +31,52 @@ final class BlockonomicsGatewayFactory extends GatewayFactory
 
             'payum.template.obtain_payment_method_nonce' => '@BlockonomicsSyliusBlockonomicsPlugin/Action/obtain_payment_method_nonce.html.twig',
             'payum.template.obtain_cardholder_authentication' => '@BlockonomicsSyliusBlockonomicsPlugin/Action/obtain_cardholder_authentication.html.twig',
+            'payum.template.payment_screen' => '@BlockonomicsSyliusBlockonomicsPlugin/Action/payment_screen.html.twig',
 
-            'payum.action.capture' => new CaptureAction(),
+            // 'payum.action.capture' => new CaptureAction(),
+            'payum.action.capture' => function (ArrayObject $config) {
+                return new PurchaseAction($config['payum.template.payment_screen']);
+            },
 
             'payum.action.purchase' => function (ArrayObject $config) {
-                $action = new PurchaseAction();
-                $action->setCardholderAuthenticationRequired($config['cardholderAuthenticationRequired']);
-
-                return $action;
+                return new PurchaseAction($config['payum.template.payment_screen']);
             },
 
             'payum.action.convert_payment' => new ConvertPaymentAction(),
 
-            'payum.action.obtain_payment_method_nonce' => function (ArrayObject $config) {
-                $action = new ObtainPaymentMethodNonceAction($config['payum.template.obtain_payment_method_nonce']);
-                $action->setCardholderAuthenticationRequired($config['cardholderAuthenticationRequired']);
-
-                return $action;
-            },
-
-            'payum.action.obtain_cardholder_authentication' => function (ArrayObject $config) {
-                return new ObtainCardholderAuthenticationAction($config['payum.template.obtain_cardholder_authentication']);
-            },
-
             'payum.action.status' => new StatusAction(),
 
-            'payum.action.api.generate_client_token' => new GenerateClientTokenAction(),
-            'payum.action.api.find_payment_method_nonce' => new FindPaymentMethodNonceAction(),
-            'payum.action.api.do_sale' => new DoSaleAction(),
+            // 'payum.action.api.generate_client_token' => new GenerateClientTokenAction(),
+            // 'payum.action.api.find_payment_method_nonce' => new FindPaymentMethodNonceAction(),
+            // 'payum.action.api.do_sale' => new DoSaleAction(),
 
-            'cardholderAuthenticationRequired' => true,
+            // 'cardholderAuthenticationRequired' => true,
         ]);
 
-        if (false == $config['payum.api']) {
-            $config['payum.default_options'] = [
-                'sandbox' => true,
-                'storeInVault' => null,
-                'storeInVaultOnSuccess' => null,
-                'storeShippingAddressInVault' => null,
-                'addBillingAddressToPaymentMethod' => null,
-            ];
-            $config->defaults($config['payum.default_options']);
-            $config['payum.required_options'] = [];
+//         if (false == $config['payum.api']) {
+//             $config['payum.default_options'] = [
+//                 'sandbox' => true,
+//                 'storeInVault' => null,
+//                 'storeInVaultOnSuccess' => null,
+//                 'storeShippingAddressInVault' => null,
+//                 'addBillingAddressToPaymentMethod' => null,
+//             ];
+//             $config->defaults($config['payum.default_options']);
+//             $config['payum.required_options'] = [];
 
-            $config['payum.api'] = function (ArrayObject $config) {
-//                $config->validateNotEmpty($config['payum.required_options']);
-//
-//                return new Api((array) $config, $config['payum.http_client'], $config['httplug.message_factory']);
+//             $config['payum.api'] = function (ArrayObject $config) {
+// //                $config->validateNotEmpty($config['payum.required_options']);
+// //
+// //                return new Api((array) $config, $config['payum.http_client'], $config['httplug.message_factory']);
 
-                /** @var BlockonomicsApiClientInterface $apiClient */
-                $apiClient = $config['payum.http_client'];
+//                 /** @var BlockonomicsApiClientInterface $apiClient */
+//                 $apiClient = $config['payum.http_client'];
 
-                $apiClient->initialise((array) $config);
+//                 $apiClient->initialise((array) $config);
 
-                return $apiClient;
-            };
-        }
+//                 return $apiClient;
+//             };
+//         }
 
         $config['payum.paths'] = [
             'PayumBlockonomics' => __DIR__ . '/Resources/views',
