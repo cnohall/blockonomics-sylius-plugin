@@ -20,7 +20,7 @@ use Payum\Core\Reply\HttpResponse;
 use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Request\RenderTemplate;
 
-final class ObtainCardholderAuthenticationAction implements ActionInterface, GatewayAwareInterface
+final class BlockonomicsPaymentScreen implements ActionInterface, GatewayAwareInterface
 {
     use GatewayAwareTrait;
 
@@ -33,10 +33,15 @@ final class ObtainCardholderAuthenticationAction implements ActionInterface, Gat
 
     public function execute($request): void
     {
-        RequestNotSupportedException::assertSupports($this, $request);        
+        RequestNotSupportedException::assertSupports($this, $request);    
+        
+        // Logic to generate BTC address and amount
+        $btcAddress = 'your_btc_address';
+        $btcAmount = '0.01'; // Example amount
 
         $this->gateway->execute($template = new RenderTemplate($this->templateName, [
-            'formAction' => '',
+            'btc_address' => $btcAddress,
+            'btc_amount' => $btcAmount,
         ]));
 
         throw new HttpResponse($template->getResult());
