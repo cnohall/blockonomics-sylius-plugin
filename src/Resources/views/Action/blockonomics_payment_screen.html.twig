@@ -131,7 +131,7 @@
     <div class="blockonomics-payment-wrapper">
         <div class="initial-state">
             <div class="invoice-info-wrapper">
-                <div class="invoice-number">Invoice #{{ invoice_number }}</div>
+                <div class="invoice-number">Order #{{ order_number }}</div>
                 <div class="invoice-amount">{{ amount }} {{ currency }}</div>
             </div>
             <div class="sections-wrapper">
@@ -167,17 +167,14 @@
         </div>
     </div>
 
-    <form action="{{ path('sylius_shop_payment_after_pay') }}" method="post" id="server-response">
+    <form action="{{ formAction }}" method="post" id="server-response">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('payment_after_pay') }}">
         <input type="hidden" name="gateway_response">
-        <input type="hidden" name="company_gateway_id" value="{{ company_gateway_id }}">
-        <input type="hidden" name="payment_method_id" value="{{ payment_method_id }}">
         <input type="hidden" name="token">
         <input type="hidden" name="amount" value="{{ amount }}">
         <input type="hidden" name="btc_price" value="{{ btc_price }}">
         <input type="hidden" name="btc_amount" value="{{ btc_amount }}">
         <input type="hidden" name="currency" value="{{ currency }}">
-        <input type="hidden" name="payment_hash" value="{{ payment_hash }}">
         <input type="hidden" name="txid" value="">
     </form>
 {% endblock %}
@@ -238,7 +235,8 @@
 
         const getBTCPrice = async () => {
             try {
-                const response = await fetch('{{ path('sylius_shop_get_btc_price') }}?currency={{ currency }}');
+                // TODO: Replace with the actual endpoint
+                const response = await fetch('/api/v1/get-btc-price?currency={{ currency }}');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -297,7 +295,7 @@
             try {
                 const btcAmount = newBtcAmount || '{{ btc_amount }}';
                 const qrString = encodeURIComponent(`bitcoin:{{ btc_address }}?amount=${btcAmount}`);
-                const response = await fetch('{{ path('sylius_shop_get_blockonomics_qr_code') }}?qr_string=' + qrString);
+                const response = await fetch('/api/v1/get-blockonomics-qr-code?qr_string=' + qrString);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
