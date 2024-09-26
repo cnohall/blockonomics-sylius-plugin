@@ -19,10 +19,12 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
     use GatewayAwareTrait;
 
     private string $templateName;
+    private $config;
 
-    public function __construct(string $templateName)
+    public function __construct(string $templateName, ArrayObject $config)
     {
         $this->templateName = $templateName;
+        $this->config = $config;
     }
 
     public function getBTCPrice($currencyCode)
@@ -59,6 +61,13 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         RequestNotSupportedException::assertSupports($this, $request);
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
+
+        // Retrieve the API key
+        $apiKey = $this->config['apiKey'] ?? null;
+
+        if (!$apiKey) {
+            throw new \LogicException('The api key parameter is required');
+        }
 
         // Render and display the payment screen
         $response = new Response(
