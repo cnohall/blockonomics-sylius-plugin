@@ -180,6 +180,7 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         const startTimer = (seconds) => {
             const countDownDate = new Date().getTime() + seconds * 1000;
@@ -264,7 +265,7 @@
                     qrCodeLink.href = `bitcoin:{{ btc_address }}?amount=${newBtcAmount}`;
                     openInWalletLink.href = `bitcoin:{{ btc_address }}?amount=${newBtcAmount}`;
                     
-                    fetchAndDisplayQRCode(newBtcAmount);
+                    generateQRCode(newBtcAmount);
                     startTimer(600);
                 }
             } finally {
@@ -288,24 +289,27 @@
             }
         };
 
-        const fetchAndDisplayQRCode = async (newBtcAmount = null) => {
+        const generateQRCode = async (newBtcAmount = null) => {
             try {
                 const btcAmount = newBtcAmount || '{{ btc_amount }}';
-                const qrString = encodeURIComponent(`bitcoin:{{ btc_address }}?amount=${btcAmount}`);
-                const response = await fetch('/api/v1/get-blockonomics-qr-code?qr_string=' + qrString);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const svgText = await response.text();
-                document.getElementById('qrcode-container').innerHTML = svgText;
+                const qrString = `bitcoin:{{ btc_address }}?amount=${btcAmount}`;
+                var qrcodeContainer = document.getElementById("qrcode-container");
+                qrcodeContainer.innerHTML = ""; // Clear previous QR code
+                new QRCode(qrcodeContainer, {
+                    text: qrString,
+                    width: 156,
+                    height: 156,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
             } catch (error) {
                 console.error('Error fetching QR code:', error);
                 document.getElementById('qrcode-container').textContent = 'Error loading QR code';
             }
         };
-
         startTimer(600);
         connectToWebsocket();
-        fetchAndDisplayQRCode();
+        generateQRCode();
     </script>
 {% endblock %}
