@@ -24,35 +24,90 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
     public function __construct(string $templateName, ArrayObject $config)
     {
         $this->templateName = $templateName;
-        $this->config = $config;
+        // Retrieve the API key
+        $this->apiKey = $config['apiKey'] ?? null;
+        if (!$this->apiKey) {
+            throw new \LogicException('The api key parameter is required');
+        }
     }
 
-    public function getBTCPrice($currencyCode)
+    private function makeApiRequest(string $url, array $headers = []): array
     {
-        $url = 'https://www.blockonomics.co/api/price?currency=' . $currencyCode;
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
+
         $response = curl_exec($ch);
+        echo var_dump($response);
 
         if (curl_errno($ch)) {
-            return 'Something went wrong: ' . curl_error($ch);
+            return [
+                'success' => false,
+                'message' => 'Something went wrong: ' . curl_error($ch),
+            ];
         }
 
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
         if ($http_code == 200) {
-            $data = json_decode($response);
-            if (isset($data->price)) {
-                return $data->price;
+            return [
+                'success' => true,
+                'data' => json_decode($response, true),
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Something went wrong',
+            ];
+        }
+    }
+
+    public function getBTCPrice(string $currencyCode)
+    {
+        $url = 'https://www.blockonomics.co/api/price?currency=' . $currencyCode;
+        $response = $this->makeApiRequest($url);
+
+        if ($response['success']) {
+            $data = $response['data'];
+            if (isset($data['price'])) {
+                return $data['price'];
             } else {
                 return 'Price not found in response';
             }
         } else {
-            return 'Something went wrong';
+            return $response['message'];
+        }
+    }
+
+    // TODO: Clean up this function and implement use of makeApiRequest
+    public function getBTCAddress(): string
+    {
+        $api_key = $this->apiKey;
+        $url = 'https://www.blockonomics.co/api/new_address?reset=1';
+
+        $ch = curl_init();curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        $header = "Authorization: Bearer " . $api_key;
+        $headers = array();
+        $headers[] = $header;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $contents = curl_exec($ch);
+        if (curl_errno($ch)) {
+            echo "Error:" . curl_error($ch);
+        }
+        $responseObj = json_decode($contents);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close ($ch);if ($status == 200) {
+        return $responseObj->address;
+        } else {
+            echo "ERROR: " . $status . ' ' . $responseObj->message;
         }
     }
 
@@ -62,12 +117,6 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        // Retrieve the API key
-        $apiKey = $this->config['apiKey'] ?? null;
-
-        if (!$apiKey) {
-            throw new \LogicException('The api key parameter is required');
-        }
 
         // Render and display the payment screen
         $response = new Response(
@@ -94,7 +143,7 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
     private function renderTemplate(string $templateName, array $parameters): string
     {
         $model = $parameters['model'];
-        $btcAddress = 'your_btc_address';
+        $btcAddress = $this->getBTCAddress();
         $currency = $model['currency'];
         $btcPrice = $this->getBTCPrice($currency);
         $amount = $model['amount'] / 100; // Example amount
