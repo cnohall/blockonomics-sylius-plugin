@@ -40,6 +40,7 @@ Todo:
 - QR code
 - Fix copy icons (copy functionality already works)
 - Implement action on WS receiving unconfirmed payment
+- Improve UI
 
 ![image](https://github.com/user-attachments/assets/dd3682f2-074a-4f75-9391-faa82ba72c84)
 
