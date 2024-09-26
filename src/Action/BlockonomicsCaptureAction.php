@@ -86,10 +86,10 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
     {
         $model = $parameters['model'];
         $btcAddress = 'your_btc_address';
-        $btcAmount = '0.01'; // Example amount
         $currency = $model['currency'];
         $btcPrice = $this->getBTCPrice($currency);
-        $amount = $model['amount'] / 100; // Example amount     
+        $amount = $model['amount'] / 100; // Example amount
+        $btcAmount = round($amount / $btcPrice, 10);
         $orderNumber = $model['invoiceNumber']; // Example order number
 
         $this->gateway->execute($template = new RenderTemplate($this->templateName, [
