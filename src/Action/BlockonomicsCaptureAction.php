@@ -25,6 +25,35 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         $this->templateName = $templateName;
     }
 
+    public function getBTCPrice($currencyCode)
+    {
+        $url = 'https://www.blockonomics.co/api/price?currency=' . $currencyCode;
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            return 'Something went wrong: ' . curl_error($ch);
+        }
+
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($http_code == 200) {
+            $data = json_decode($response);
+            if (isset($data->price)) {
+                return $data->price;
+            } else {
+                return 'Price not found in response';
+            }
+        } else {
+            return 'Something went wrong';
+        }
+    }
+
     public function execute($request): void
     {
         RequestNotSupportedException::assertSupports($this, $request);
@@ -58,8 +87,8 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         $model = $parameters['model'];
         $btcAddress = 'your_btc_address';
         $btcAmount = '0.01'; // Example amount
-        $btcPrice = '1000'; // Example price
-        $currency = $model['currency']; // Example currency
+        $currency = $model['currency'];
+        $btcPrice = $this->getBTCPrice($currency);
         $amount = $model['amount'] / 100; // Example amount     
         $orderNumber = $model['invoiceNumber']; // Example order number
 
