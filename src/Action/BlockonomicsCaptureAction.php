@@ -31,85 +31,68 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         }
     }
 
-    private function makeApiRequest(string $url, array $headers = []): array
-    {
-        $ch = curl_init();
+private function makeApiRequest(string $url, array $headers = [], string $method = 'GET'): array
+{
+    $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => $method,
+    ]);
 
-        if (!empty($headers)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-
-        $response = curl_exec($ch);
-        echo var_dump($response);
-
-        if (curl_errno($ch)) {
-            return [
-                'success' => false,
-                'message' => 'Something went wrong: ' . curl_error($ch),
-            ];
-        }
-
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($http_code == 200) {
-            return [
-                'success' => true,
-                'data' => json_decode($response, true),
-            ];
-        } else {
-            return [
-                'success' => false,
-                'message' => 'Something went wrong',
-            ];
-        }
-    }
-
-    public function getBTCPrice(string $currencyCode)
-    {
-        $url = 'https://www.blockonomics.co/api/price?currency=' . $currencyCode;
-        $response = $this->makeApiRequest($url);
-
-        if ($response['success']) {
-            $data = $response['data'];
-            if (isset($data['price'])) {
-                return $data['price'];
-            } else {
-                return 'Price not found in response';
-            }
-        } else {
-            return $response['message'];
-        }
-    }
-
-    // TODO: Clean up this function and implement use of makeApiRequest
-    public function getBTCAddress(): string
-    {
-        $api_key = $this->apiKey;
-        $url = 'https://www.blockonomics.co/api/new_address?reset=1';
-
-        $ch = curl_init();curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        $header = "Authorization: Bearer " . $api_key;
-        $headers = array();
-        $headers[] = $header;
+    if (!empty($headers)) {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        $contents = curl_exec($ch);
-        if (curl_errno($ch)) {
-            echo "Error:" . curl_error($ch);
-        }
-        $responseObj = json_decode($contents);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close ($ch);if ($status == 200) {
-        return $responseObj->address;
-        } else {
-            echo "ERROR: " . $status . ' ' . $responseObj->message;
-        }
     }
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        return [
+            'success' => false,
+            'message' => "cURL Error: $error",
+        ];
+    }
+
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+
+    return [
+        'success' => $httpCode == 200,
+        'data' => $data,
+        'httpCode' => $httpCode,
+        'message' => $data['message'] ?? 'Unexpected response',
+    ];
+}
+
+public function getBTCPrice(string $currencyCode): string
+{
+    $url = "https://www.blockonomics.co/api/price?currency=$currencyCode";
+    $response = $this->makeApiRequest($url);
+
+    if ($response['success'] && isset($response['data']['price'])) {
+        return (string)$response['data']['price'];
+    }
+
+    return $response['message'] ?? 'Failed to get BTC price';
+}
+
+public function getBTCAddress(): string
+{
+    $url = 'https://www.blockonomics.co/api/new_address?reset=1';
+    $headers = ["Authorization: Bearer {$this->apiKey}"];
+    $response = $this->makeApiRequest($url, $headers, 'POST');
+
+    if ($response['success'] && isset($response['data']['address'])) {
+        return $response['data']['address'];
+    }
+
+    throw new \RuntimeException($response['message'] ?? 'Failed to get BTC address');
+}
 
     public function execute($request): void
     {
