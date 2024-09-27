@@ -31,68 +31,68 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         }
     }
 
-private function makeApiRequest(string $url, array $headers = [], string $method = 'GET'): array
-{
-    $ch = curl_init();
+    private function makeApiRequest(string $url, array $headers = [], string $method = 'GET'): array
+    {
+        $ch = curl_init();
 
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CUSTOMREQUEST => $method,
-    ]);
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => $method,
+        ]);
 
-    if (!empty($headers)) {
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    }
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-    if (curl_errno($ch)) {
-        $error = curl_error($ch);
+        if (curl_errno($ch)) {
+            $error = curl_error($ch);
+            curl_close($ch);
+            return [
+                'success' => false,
+                'message' => "cURL Error: $error",
+            ];
+        }
+
         curl_close($ch);
+
+        $data = json_decode($response, true);
+
         return [
-            'success' => false,
-            'message' => "cURL Error: $error",
+            'success' => $httpCode == 200,
+            'data' => $data,
+            'httpCode' => $httpCode,
+            'message' => $data['message'] ?? 'Unexpected response',
         ];
     }
 
-    curl_close($ch);
+    public function getBTCPrice(string $currencyCode): string
+    {
+        $url = "https://www.blockonomics.co/api/price?currency=$currencyCode";
+        $response = $this->makeApiRequest($url);
 
-    $data = json_decode($response, true);
+        if ($response['success'] && isset($response['data']['price'])) {
+            return (string)$response['data']['price'];
+        }
 
-    return [
-        'success' => $httpCode == 200,
-        'data' => $data,
-        'httpCode' => $httpCode,
-        'message' => $data['message'] ?? 'Unexpected response',
-    ];
-}
-
-public function getBTCPrice(string $currencyCode): string
-{
-    $url = "https://www.blockonomics.co/api/price?currency=$currencyCode";
-    $response = $this->makeApiRequest($url);
-
-    if ($response['success'] && isset($response['data']['price'])) {
-        return (string)$response['data']['price'];
+        return $response['message'] ?? 'Failed to get BTC price';
     }
 
-    return $response['message'] ?? 'Failed to get BTC price';
-}
+    public function getBTCAddress(): string
+    {
+        $url = 'https://www.blockonomics.co/api/new_address?reset=1';
+        $headers = ["Authorization: Bearer {$this->apiKey}"];
+        $response = $this->makeApiRequest($url, $headers, 'POST');
 
-public function getBTCAddress(): string
-{
-    $url = 'https://www.blockonomics.co/api/new_address?reset=1';
-    $headers = ["Authorization: Bearer {$this->apiKey}"];
-    $response = $this->makeApiRequest($url, $headers, 'POST');
+        if ($response['success'] && isset($response['data']['address'])) {
+            return $response['data']['address'];
+        }
 
-    if ($response['success'] && isset($response['data']['address'])) {
-        return $response['data']['address'];
+        throw new \RuntimeException($response['message'] ?? 'Failed to get BTC address');
     }
-
-    throw new \RuntimeException($response['message'] ?? 'Failed to get BTC address');
-}
 
     public function execute($request): void
     {
@@ -100,11 +100,23 @@ public function getBTCAddress(): string
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
+        $btcAddress = $this->getBTCAddress();
+        $currency = $model['currency'];
+        $btcPrice = $this->getBTCPrice($currency);
+        $amount = $model['amount'] / 100; // Example amount
+        $btcAmount = round($amount / $btcPrice, 10);
+        $orderNumber = $model['invoiceNumber']; // Example order number
 
-        // Render and display the payment screen
-        $response = new Response(
-            $this->renderTemplate($this->templateName, ['model' => $model])
-        );
+        $this->gateway->execute($template = new RenderTemplate($this->templateName, [
+            'btc_address' => $btcAddress,
+            'btc_amount' => $btcAmount,
+            'btc_price' => $btcPrice,
+            'currency' => $currency,
+            'formAction' => '',
+            'amount' => $amount,
+            'order_number' => $orderNumber,
+        ]));
+        throw new HttpResponse($template->getResult());
         $response->send();
         exit;
 
@@ -123,25 +135,4 @@ public function getBTCAddress(): string
             $request->getModel() instanceof \ArrayAccess;
     }
 
-    private function renderTemplate(string $templateName, array $parameters): string
-    {
-        $model = $parameters['model'];
-        $btcAddress = $this->getBTCAddress();
-        $currency = $model['currency'];
-        $btcPrice = $this->getBTCPrice($currency);
-        $amount = $model['amount'] / 100; // Example amount
-        $btcAmount = round($amount / $btcPrice, 10);
-        $orderNumber = $model['invoiceNumber']; // Example order number
-
-        $this->gateway->execute($template = new RenderTemplate($this->templateName, [
-            'btc_address' => $btcAddress,
-            'btc_amount' => $btcAmount,
-            'btc_price' => $btcPrice,
-            'currency' => $currency,
-            'formAction' => '',
-            'amount' => $amount,
-            'order_number' => $orderNumber,
-        ]));
-          throw new HttpResponse($template->getResult());
-    }
 }
