@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Blockonomics\SyliusBlockonomicsPlugin\Action;
 
+use Sylius\Bundle\PayumBundle\Request\GetStatus;
 use Payum\Core\Action\ActionInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\GatewayAwareInterface;
@@ -14,6 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Payum\Core\Request\RenderTemplate;
 use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Reply\HttpResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
 
 class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterface
 {
@@ -113,7 +116,12 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         if (array_key_exists('txid', $clientHttpRequest->request)) {
             $txid = $clientHttpRequest->request['txid'];
 
-            // $request->setResponse($txid);
+            $status = new getStatus($request->getModel());
+            $status->markPending();
+            $this->gateway->execute($status);
+
+            $response = new RedirectResponse('/thank-you');
+            $response->send();
 
             return;
         }
