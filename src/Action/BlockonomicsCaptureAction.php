@@ -12,6 +12,7 @@ use Payum\Core\Request\Capture;
 use Payum\Core\Exception\RequestNotSupportedException;
 use Symfony\Component\HttpFoundation\Response;
 use Payum\Core\Request\RenderTemplate;
+use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Reply\HttpResponse;
 
 class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterface
@@ -107,32 +108,35 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         $btcAmount = round($amount / $btcPrice, 10);
         $orderNumber = $model['invoiceNumber']; // Example order number
 
+        $this->gateway->execute($clientHttpRequest = new GetHttpRequest());
+
+        if (array_key_exists('txid', $clientHttpRequest->request)) {
+            $txid = $clientHttpRequest->request['txid'];
+
+            // $request->setResponse($txid);
+
+            return;
+        }
+
         $this->gateway->execute($template = new RenderTemplate($this->templateName, [
             'btc_address' => $btcAddress,
             'btc_amount' => $btcAmount,
             'btc_price' => $btcPrice,
             'currency' => $currency,
-            'formAction' => '',
+            'formAction' => $clientHttpRequest->uri,
             'amount' => $amount,
             'order_number' => $orderNumber,
+            'payment_id' => $model['payment_id'],
         ]));
         throw new HttpResponse($template->getResult());
         $response->send();
         exit;
 
-
-        // Here, implement the logic to check if the payment was successful
-        // You might need to make API calls to Blockonomics to verify the payment status
-        
-        // If payment is confirmed, update the model
-        // $model['status'] = 'paid';
     }
 
     public function supports($request): bool
     {
-        return
-            $request instanceof Capture &&
-            $request->getModel() instanceof \ArrayAccess;
+        return $request instanceof Capture && $request->getModel() instanceof \ArrayAccess;
     }
 
 }
