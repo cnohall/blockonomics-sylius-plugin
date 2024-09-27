@@ -113,25 +113,30 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
 
         $this->gateway->execute($clientHttpRequest = new GetHttpRequest());
 
-        if (array_key_exists('txid', $clientHttpRequest->request)) {
-            $txid = $clientHttpRequest->request['txid'];
+        $status = new GetStatus($request->getModel());
+        $this->gateway->execute($status);
+        $status->markCaptured();
 
-            $status = new getStatus($request->getModel());
-            $status->markPending();
-            $this->gateway->execute($status);
+        // if (array_key_exists('txid', $clientHttpRequest->request)) {
+        //     $txid = $clientHttpRequest->request['txid'];
 
-            $response = new RedirectResponse('/thank-you');
-            $response->send();
-
-            return;
-        }
-
+            
+        //     $token = $request->getToken();
+        //     echo $model['status'];
+        //     echo $token->getAfterUrl();
+        //     $response = new RedirectResponse($token->getAfterUrl());
+            
+        //     $response->send();
+        // }
+        $model['status'] = 'pending';
+        $after_url = $request->getToken()->getAfterUrl();
         $this->gateway->execute($template = new RenderTemplate($this->templateName, [
             'btc_address' => $btcAddress,
             'btc_amount' => $btcAmount,
             'btc_price' => $btcPrice,
             'currency' => $currency,
-            'formAction' => $clientHttpRequest->uri,
+            'formAction' => $after_url,
+            'after_url' => $after_url,
             'amount' => $amount,
             'order_number' => $orderNumber,
             'payment_id' => $model['payment_id'],
