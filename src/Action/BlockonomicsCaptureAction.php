@@ -104,6 +104,18 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
+        $this->gateway->execute($httpRequest = new GetHttpRequest());
+
+        if ($httpRequest->method === 'POST' && isset($httpRequest->request['txid'])) {
+            // Handle form submission with txid
+            $model['notes'] = "TXID: " . $httpRequest->request['txid'];
+            
+            $after_url = $request->getToken()->getAfterUrl();
+            $response = new RedirectResponse($after_url);
+            $response->send();
+            exit;   
+        }
+
         $btcAddress = $this->getBTCAddress();
         $currency = $model['currency'];
         $btcPrice = $this->getBTCPrice($currency);
@@ -112,14 +124,14 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         $orderNumber = $model['invoiceNumber'];
         $paymentId = $model['payment_id'];
         $model['status'] = 'pending';
+        $model['notes'] = "TXID: randomstring";
 
-        $after_url = $request->getToken()->getAfterUrl();
         $this->gateway->execute($template = new RenderTemplate($this->templateName, [
             'btc_address' => $btcAddress,
             'btc_amount' => $btcAmount,
             'btc_price' => $btcPrice,
             'currency' => $currency,
-            'formAction' => $after_url,
+            'formAction' => '',
             'amount' => $amount,
             'order_number' => $orderNumber,
             'payment_id' => $paymentId,

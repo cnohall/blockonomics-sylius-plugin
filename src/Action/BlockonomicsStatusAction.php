@@ -6,27 +6,31 @@ use Payum\Core\Action\ActionInterface;
 use Payum\Core\Request\GetStatusInterface;
 use Payum\Core\Bridge\Spl\ArrayObject;
 use Payum\Core\Exception\RequestNotSupportedException;
+use Doctrine\ORM\EntityManagerInterface;
 
 class BlockonomicsStatusAction implements ActionInterface
 {
+    private $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+    
     public function execute($request)
     {
         RequestNotSupportedException::assertSupports($this, $request);
 
         $details = ArrayObject::ensureArrayObject($request->getModel());
         $status = $details['status'];
-        // Access txid from the details array
-        $txid = isset($details['txid']) ? $details['txid'] : "it's not set";
-
-        echo var_dump($txid);
+        $notes = $details['notes'];
+        echo "notes: $notes\n";
 
         if ($status === 'pending') {
 
-            // $txid = $request->request->get('txid');
-            // $model['txid'] = $txid;
             // $request->markPending();
         } else {
-            // $request->markNew();
+            $request->markNew();
         }
     }
 
