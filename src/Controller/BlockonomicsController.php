@@ -57,9 +57,8 @@ class BlockonomicsController extends AbstractController
      */
     public function updateOrderNote(Request $request): Response {
         try {
-            $invoiceNumber = $request->query->get('invoice_number');
             $txid = $request->query->get('txid', 'txid not provided');
-            $order = $this->orderRepository->findOneBy(['number' => $invoiceNumber]);
+            $order = $this->orderRepository->findOneBy(['notes' => $txid]);
             
             if (!$order) {
                 throw $this->createNotFoundException('Order not found');
@@ -73,6 +72,30 @@ class BlockonomicsController extends AbstractController
             $this->entityManager->flush();
             
             return new Response('Order note updated successfully');
+        } catch (Exception $e) {
+            return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @Route("/api/blockonomics/update-order-status", name="order_status_update")
+     */
+    public function updateOrderStatus(Request $request): Response {
+        try {
+            $txid = $request->query->get('txid');
+            $status = $request->query->get('status', 'status not provided');
+            $order = $this->orderRepository->findOneByNotesContainingTxid(['notes' => $txid]);
+            
+            if (!$order) {
+                throw $this->createNotFoundException('Order not found');
+            }
+            
+            $order->setState($status); 
+
+            $this->entityManager->persist($order);
+            $this->entityManager->flush();
+            
+            return new Response('Order status updated successfully');
         } catch (Exception $e) {
             return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
