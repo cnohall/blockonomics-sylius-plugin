@@ -291,14 +291,11 @@
 
             ws.onmessage = function(event) {
                 const data = JSON.parse(event.data);
-                console.log('Payment status:', data.status);
                 const isPaymentUnconfirmed = data.status === 0;
                 const isPaymentPartiallyConfirmed = data.status === 1;
                 if (isPaymentUnconfirmed || isPaymentPartiallyConfirmed) {
                     document.querySelector('input[name="txid"]').value = data.txid || '';
-                    // document.getElementById('form').submit();
-                    console.log("{{ after_url }}");
-                    window.location.href = '{{ after_url}}'
+                    document.getElementById('form').submit();
                 }
             }
         };
