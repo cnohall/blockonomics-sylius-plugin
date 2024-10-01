@@ -121,7 +121,6 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         $orderNumber = $model['invoiceNumber'];
         $paymentId = $model['payment_id'];
         $model['status'] = 'pending';
-        echo var_dump($model);
 
         $after_url = $request->getToken()->getAfterUrl();
         $this->gateway->execute($template = new RenderTemplate($this->templateName, [
