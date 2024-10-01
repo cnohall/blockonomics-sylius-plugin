@@ -83,11 +83,33 @@ class BlockonomicsController extends AbstractController
     public function updateOrderStatus(Request $request): Response {
         try {
             $txid = $request->query->get('txid');
-            $status = $request->query->get('status', 'status not provided');
-            $order = $this->orderRepository->findOneByNotesContainingTxid(['notes' => $txid]);
-            
+            $status = $request->query->get('status', false);
+
+            // Insert callback secret logic here
+
+            if (!$txid) {
+                throw $this->createNotFoundException('No txid provided');
+            }
+
+            if (!$status) {
+                throw $this->createNotFoundException('No status provided');
+            }
+
+
+            $order = $this->orderRepository->createQueryBuilder('o')
+                ->where('o.notes LIKE :txid')
+                ->setParameter('txid', '%' . $txid . '%')
+                ->getQuery()
+                ->getOneOrNullResult();
+
             if (!$order) {
                 throw $this->createNotFoundException('Order not found');
+            }
+
+            $updated_order_state = $status == 2 ? 'paid' : false;
+
+            if (!$updated_order_state) {
+                return new Response('No update to status done');
             }
             
             $order->setState($status); 
