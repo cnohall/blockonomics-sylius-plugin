@@ -4,3 +4,8 @@ blockonomics_price:
         _controller: Blockonomics\SyliusBlockonomicsPlugin\Controller\BlockonomicsController::getPrice
         name: ~
 
+blockonomics_verify:
+    path: /api/blockonomics/update-order-note
+    defaults:
+        _controller: Blockonomics\SyliusBlockonomicsPlugin\Controller\BlockonomicsController::updateOrderNote
+        name: ~

@@ -106,15 +106,12 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
 
         $this->gateway->execute($httpRequest = new GetHttpRequest());
 
-        if ($httpRequest->method === 'POST' && isset($httpRequest->request['txid'])) {
-            // Handle form submission with txid
-            $model['notes'] = "TXID: " . $httpRequest->request['txid'];
-            
-            $after_url = $request->getToken()->getAfterUrl();
-            $response = new RedirectResponse($after_url);
-            $response->send();
-            exit;   
-        }
+        // if ($httpRequest->method === 'POST' && isset($httpRequest->request['txid'])) {            
+        //     $after_url = $request->getToken()->getAfterUrl();
+        //     $response = new RedirectResponse($after_url);
+        //     $response->send();
+        //     exit;   
+        // }
 
         $btcAddress = $this->getBTCAddress();
         $currency = $model['currency'];
@@ -124,14 +121,15 @@ class BlockonomicsCaptureAction implements ActionInterface, GatewayAwareInterfac
         $orderNumber = $model['invoiceNumber'];
         $paymentId = $model['payment_id'];
         $model['status'] = 'pending';
-        $model['notes'] = "TXID: randomstring";
+        echo var_dump($model);
 
+        $after_url = $request->getToken()->getAfterUrl();
         $this->gateway->execute($template = new RenderTemplate($this->templateName, [
             'btc_address' => $btcAddress,
             'btc_amount' => $btcAmount,
             'btc_price' => $btcPrice,
             'currency' => $currency,
-            'formAction' => '',
+            'formAction' => $after_url,
             'amount' => $amount,
             'order_number' => $orderNumber,
             'payment_id' => $paymentId,

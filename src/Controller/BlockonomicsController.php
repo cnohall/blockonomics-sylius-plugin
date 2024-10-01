@@ -7,14 +7,21 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Sylius\Bundle\CoreBundle\Doctrine\ORM\OrderRepository;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\ORM\EntityManagerInterface;
 
 class BlockonomicsController extends AbstractController
 {
     private $httpClient;
+    private $orderRepository;
+    private $entityManager;
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(HttpClientInterface $httpClient, OrderRepository $orderRepository, EntityManagerInterface $entityManager)
     {
         $this->httpClient = $httpClient;
+        $this->orderRepository = $orderRepository;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -44,4 +51,31 @@ class BlockonomicsController extends AbstractController
             return new JsonResponse(['error' => 'HTTP request failed: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * @Route("/api/blockonomics/update-order-note", name="order_note_update")
+     */
+    public function updateOrderNote(Request $request): Response {
+        try {
+            $invoiceNumber = $request->query->get('invoice_number');
+            $txid = $request->query->get('txid', 'txid not provided');
+            $order = $this->orderRepository->findOneBy(['number' => $invoiceNumber]);
+            
+            if (!$order) {
+                throw $this->createNotFoundException('Order not found');
+            }
+            
+            $currentNotes = $order->getNotes();
+            $newNote = $currentNotes . "\n" . "TXID: " . $txid;
+            $order->setNotes($newNote); 
+
+            $this->entityManager->persist($order);
+            $this->entityManager->flush();
+            
+            return new Response('Order note updated successfully');
+        } catch (Exception $e) {
+            return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
+    }
+
 }
