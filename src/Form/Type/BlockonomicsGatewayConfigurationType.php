@@ -41,21 +41,11 @@ final class BlockonomicsGatewayConfigurationType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('callbackUrl', HiddenType::class, [
-                'required' => true,
-                'data' => $callbackSecret,
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'blockonomics_sylius_blockonomics_plugin.api_key.not_blank',
-                        'groups' => 'sylius',
-                    ]),
-                ],
-            ])
             ->add('callbackUrl', TextType::class, [
                 'label' => 'blockonomics_sylius_blockonomics_plugin.ui.callback_url',
                 'required' => true,
-                'disabled' => true,
-                'data' => $baseUrl . "/api/blockonomics/update-order-status?secret=" . $callbackSecret,
+                // 'disabled' => true,
+                // 'data' => $baseUrl . "/api/blockonomics/update-order-status?secret=" . $callbackSecret,
                 'constraints' => [
                     new NotBlank([
                         'message' => 'blockonomics_sylius_blockonomics_plugin.callback_url.not_blank',
@@ -63,6 +53,7 @@ final class BlockonomicsGatewayConfigurationType extends AbstractType
                     ]),
                 ],
             ])
+            ->add('callbackSecret', HiddenType::class, [])
             ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
                 $data = $event->getData();
 

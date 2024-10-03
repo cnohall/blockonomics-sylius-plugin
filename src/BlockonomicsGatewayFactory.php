@@ -32,7 +32,6 @@ final class BlockonomicsGatewayFactory extends GatewayFactory
             },
         ]);
 
-        // TODO: Implement the following
         if (false == $config['payum.api']) {
             $config['payum.default_options'] = [
                 'apiKey' => '',
