@@ -27,8 +27,6 @@ final class BlockonomicsGatewayConfigurationType extends AbstractType
     {
         $request = $this->requestStack->getCurrentRequest();
         $baseUrl = $request->getSchemeAndHttpHost();
-        $randomBytes = random_bytes(20);
-        $callbackSecret = sha1($randomBytes);
 
         $builder
             ->add('apiKey', TextType::class, [
@@ -44,8 +42,6 @@ final class BlockonomicsGatewayConfigurationType extends AbstractType
             ->add('callbackUrl', TextType::class, [
                 'label' => 'blockonomics_sylius_blockonomics_plugin.ui.callback_url',
                 'required' => true,
-                // 'disabled' => true,
-                // 'data' => $baseUrl . "/api/blockonomics/update-order-status?secret=" . $callbackSecret,
                 'constraints' => [
                     new NotBlank([
                         'message' => 'blockonomics_sylius_blockonomics_plugin.callback_url.not_blank',
@@ -53,14 +49,18 @@ final class BlockonomicsGatewayConfigurationType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('callbackSecret', HiddenType::class, [])
-            ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
+            // TODO: Add callback secret that is in sync with the callback url
+            // ->add('callbackSecret', HiddenType::class)
+            ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($baseUrl) {
                 $data = $event->getData();
+                if (empty($data['callbackUrl'])) {
+                    $randomBytes = random_bytes(20);
+                    $callbackSecret = sha1($randomBytes);
+                    $data['callbackUrl'] = $baseUrl . "/api/blockonomics/update-order-status?secret=" . $callbackSecret;
+                }
 
                 $data['payum.http_client'] = '@blockonomics_sylius_blockonomics_plugin.api_client.blockonomics';
-
                 $event->setData($data);
-            })
-        ;
+            });
     }
 }
