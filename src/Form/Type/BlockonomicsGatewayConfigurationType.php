@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Blockonomics\SyliusBlockonomicsPlugin\Form\Type;
 
+use Blockonomics\SyliusBlockonomicsPlugin\Service\CallbackUrlManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -17,10 +18,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
 final class BlockonomicsGatewayConfigurationType extends AbstractType
 {
     private $requestStack;
+    private $callbackUrlManager;
 
-    public function __construct(RequestStack $requestStack)
+    public function __construct(RequestStack $requestStack, CallbackUrlManager $callbackUrlManager)
     {
         $this->requestStack = $requestStack;
+        $this->callbackUrlManager = $callbackUrlManager;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -59,6 +62,7 @@ final class BlockonomicsGatewayConfigurationType extends AbstractType
                     $data['callbackUrl'] = $baseUrl . "/api/blockonomics/update-order-status?secret=" . $callbackSecret;
                 }
 
+                $this->callbackUrlManager->setCallbackUrl($data['callbackUrl']);
                 $data['payum.http_client'] = '@blockonomics_sylius_blockonomics_plugin.api_client.blockonomics';
                 $event->setData($data);
             });

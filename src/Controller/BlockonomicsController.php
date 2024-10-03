@@ -2,6 +2,7 @@
 
 namespace Blockonomics\SyliusBlockonomicsPlugin\Controller;
 
+use Blockonomics\SyliusBlockonomicsPlugin\Service\CallbackUrlManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,12 +17,14 @@ class BlockonomicsController extends AbstractController
     private $httpClient;
     private $orderRepository;
     private $entityManager;
+    private $callbackUrlManager;
 
-    public function __construct(HttpClientInterface $httpClient, OrderRepository $orderRepository, EntityManagerInterface $entityManager)
+    public function __construct(HttpClientInterface $httpClient, OrderRepository $orderRepository, EntityManagerInterface $entityManager, CallbackUrlManager $callbackUrlManager)
     {
         $this->httpClient = $httpClient;
         $this->orderRepository = $orderRepository;
         $this->entityManager = $entityManager;
+        $this->callbackUrlManager = $callbackUrlManager;
     }
 
     /**
@@ -84,6 +87,30 @@ class BlockonomicsController extends AbstractController
         try {
             $txid = $request->query->get('txid');
             $status = $request->query->get('status', false);
+            echo var_dump($this->callbackUrlManager->getCallbackUrl());
+            $storedCallbackUrl = $this->callbackUrlManager->getCallbackUrl();
+
+            $storedCallbackSecret = null;
+            if ($storedCallbackUrl) {
+                // Extract the secret from the callback URL
+                $parsedUrl = parse_url($storedCallbackUrl);
+                $queryParams = [];
+                if (isset($parsedUrl['query'])) {
+                    parse_str($parsedUrl['query'], $queryParams);
+                    $storedCallbackSecret = $queryParams['secret'] ?? null;
+                }
+            } 
+            
+            // Extract the secret from the request URL
+            $requestSecret = $request->query->get('secret', null);
+
+            if(!$storedCallbackSecret) {
+                throw $this->createNotFoundException('No secret found in stored callback URL');
+            }
+
+            if ($storedCallbackSecret !== $requestSecret) {
+                throw $this->createNotFoundException('Secrets do not match');
+            }
 
             // Insert callback secret logic here
 

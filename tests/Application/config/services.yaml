@@ -5,9 +5,32 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    Blockonomics\SyliusBlockonomicsPlugin\Service\CallbackUrlManager: ~
+
     # Explicitly define the BlockonomicsController as a service
     Blockonomics\SyliusBlockonomicsPlugin\Controller\BlockonomicsController:
         arguments:
             $httpClient: '@http_client'
             $orderRepository: '@sylius.repository.order'
             $entityManager: '@doctrine.orm.default_entity_manager'
+
+    # Services from the XML configuration
+    blockonomics_sylius_blockonomics_plugin.api_client.blockonomics:
+        class: Blockonomics\SyliusBlockonomicsPlugin\ApiClient\BlockonomicsApiClient
+        public: true
+
+    blockonomics_sylius_blockonomics_plugin.form.type.blockonomics_gateway_configuration:
+        class: Blockonomics\SyliusBlockonomicsPlugin\Form\Type\BlockonomicsGatewayConfigurationType
+        arguments:
+            - '@request_stack'
+            - '@Blockonomics\SyliusBlockonomicsPlugin\Service\CallbackUrlManager'
+        tags:
+            - { name: 'sylius.gateway_configuration_type', type: 'blockonomics', label: 'blockonomics_sylius_blockonomics_plugin.ui.blockonomics_gateway_label' }
+            - { name: 'form.type' }
+
+    blockonomics_sylius_blockonomics_plugin.gateway_factory.blockonomics:
+        class: Payum\Core\Bridge\Symfony\Builder\GatewayFactoryBuilder
+        arguments:
+            - 'Blockonomics\SyliusBlockonomicsPlugin\BlockonomicsGatewayFactory'
+        tags:
+            - { name: 'payum.gateway_factory_builder', factory: 'blockonomics' }
